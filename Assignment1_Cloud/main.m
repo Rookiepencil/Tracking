@@ -28,9 +28,10 @@ for r=1:p.scenario.monte_runs
     dt = p.target(1).sampletime; % Sampling time
     Parameter = p.target(1).process_noise;
 
-    for k=1:dt:p.scenario.num_of_time_steps 
-        
-        [xk, Q] = moveTarget(Parameter, xk_1, k);
+    for k=1:p.scenario.num_of_time_steps 
+        T = k + dt;
+        [xk, Q] = moveTarget(Parameter, xk_1, dt);
+        xk_1 = xk;
         plot(xk(1), xk(3), 'b.', 'MarkerSize', 15); % Plot target Movement
         [Measurement, FalseAlarm]= generateMeasurements(Sensor_Parameter, xk);
         if isempty(Measurement)
@@ -39,7 +40,7 @@ for r=1:p.scenario.monte_runs
         
         [MeasurementConvert, FalseAlarmConvert, R] = convertMeasurement(Measurement, FalseAlarm, Sensor_Parameter);
         plot(MeasurementConvert(1), MeasurementConvert(2), 'm.', 'MarkerSize', 15); 
-        plot(FalseAlarmConvert(1), FalseAlarmConvert(2), 'rx', 'MarkerSize', 10); 
+        %plot(FalseAlarmConvert(1), FalseAlarmConvert(2), 'rx', 'MarkerSize', 10); 
         % 
         % .. = dataAssociation(....);
         % 

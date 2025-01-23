@@ -1,17 +1,17 @@
-function [Measurement, FalseAlarm]= generateMeasurements(parameter, target_state)
+function [Measurement, FalseAlarm]= generateMeasurements(parameter, target_state) %combine measurement and falsealarm together
    Measurement =[];
    FalseAlarm = [];
    SensorXpos = parameter.Xpos;
    SensorYpos = parameter.Ypos;
    Pd = parameter.Pd;
    FalseRate = parameter.FalseDensity;
-   RangeNoise = parameter.rangeSigma;
+   RangeNoisestandD = parameter.rangeSigma;
    azimuthNoise = parameter.azimuthSigma;
    Lamda = FalseRate * (parameter.rangeUb  - parameter.rangeLb) * (parameter.AziUb  - parameter.AziLb);
 
    if rand(1) < Pd
         rangemeasurement = sqrt((target_state(1) - SensorXpos)^2 + (target_state(3) - SensorYpos)^2);
-        rangemeasurement = rangemeasurement + randn * RangeNoise; %what is the accept noise range
+        rangemeasurement = rangemeasurement + randn * RangeNoisestandD; %what is the accept noise range
 
         azimuthmeasurement = atan2(target_state(3)- SensorYpos , target_state(1)- SensorXpos);
         azimuthmeasurement = azimuthmeasurement + randn * azimuthNoise; %what is the accept noise range
@@ -19,9 +19,11 @@ function [Measurement, FalseAlarm]= generateMeasurements(parameter, target_state
         disp(['Range: ', num2str(Measurement), ', Azimuth: ', num2str(azimuthmeasurement)]);
    end
 
-   for i = 1:Lamda
-       falseRange = (parameter.rangeUb  - parameter.rangeLb) * rand(1);
-       falseazimuth = (parameter.AziUb  - parameter.AziLb) * rand(1);
+   numberofFalse = poissrnd(Lamda);
+
+   for i = 1:numberofFalse
+       falseRange = (parameter.rangeUb  - parameter.rangeLb) * rand(1) + parameter.rangeLb;
+       falseazimuth = (parameter.AziUb  - parameter.AziLb) * rand(1) + parameter.AziLb;
        FalseAlarm = [FalseAlarm; falseRange,falseazimuth];
    end
 

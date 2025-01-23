@@ -7,6 +7,6 @@ function [xk,Q] = moveTarget(parameter, xk_1, T) % add additional parameters, if
 
     G = [(T^2 / 2), 0; 0, T; (T^2 / 2), 0; 0, T];
 
-    xk = F * xk_1 + G * randn(2,1);
+    xk = F * xk_1 + G * sqrt(parameter) *randn(2,1);
     Q  = G * parameter * G';
 end

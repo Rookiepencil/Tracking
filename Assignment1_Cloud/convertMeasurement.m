@@ -11,8 +11,9 @@ function [MeasurementConvert, FalseAlarmConvert,R]= convertMeasurement(Measureme
    if ~isempty(Measurement)
        range = Measurement(1);
        Azi = Measurement(2);
-       x_unbiased = ((lamdatheta1^-1) * range * cos(Azi));
-       y_unbiased = ((lamdatheta1^-1) * range * sin(Azi));
+       x_unbiased = Sensor_Parameter.Xpos + ((lamdatheta1^-1) * range * cos(Azi));
+       y_unbiased = Sensor_Parameter.Ypos + ((lamdatheta1^-1) * range * sin(Azi));
+
        MeasurementConvert = [MeasurementConvert; x_unbiased, y_unbiased];
        Rp11 = (lamdatheta1^-2 - 2) * range^2 * cos(Azi)^2 + 0.5 * (range^2 + Sensor_Parameter.rangeSigma^2) * (1 + lamdatheta2 * cos(2 * Azi));
        Rp22 = (lamdatheta1^-2 - 2) * range^2 * sin(Azi)^2 + 0.5 * (range^2 + Sensor_Parameter.rangeSigma^2) * (1 - lamdatheta2 * cos(2 * Azi));
@@ -23,8 +24,8 @@ function [MeasurementConvert, FalseAlarmConvert,R]= convertMeasurement(Measureme
    for i = 1:size(FalseAlarm, 1)
         EachFalse_range = FalseAlarm(i, 1);
         EachFalse_azimuth = FalseAlarm(i, 2);
-        fa_x = (1 / lamdatheta1) * EachFalse_range * cos(EachFalse_azimuth);
-        fa_y = (1 / lamdatheta1) * EachFalse_range * sin(EachFalse_azimuth);
+        fa_x = Sensor_Parameter.Xpos + (1 / lamdatheta1) * EachFalse_range * cos(EachFalse_azimuth);
+        fa_y = Sensor_Parameter.Ypos + (1 / lamdatheta1) * EachFalse_range * sin(EachFalse_azimuth);
         FalseAlarmConvert = [FalseAlarmConvert; fa_x, fa_y];
    end
 
