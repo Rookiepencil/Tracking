@@ -22,7 +22,7 @@ for r=1:p.scenario.monte_runs
     [Measurement, FalseAlarm]= generateMeasurements(Sensor_Parameter, xk_1);
     if ~isempty(Measurement)
         [MeasurementConvert, FalseAlarmConvert, R] = convertMeasurement(Measurement, FalseAlarm, Sensor_Parameter);
-        plot(MeasurementConvert(1), MeasurementConvert(2), 'm.', 'MarkerSize', 15); 
+        %plot(MeasurementConvert(1), MeasurementConvert(2), 'm.', 'MarkerSize', 15); 
     end
     
     dt = p.target(1).sampletime; % Sampling time
@@ -39,7 +39,7 @@ for r=1:p.scenario.monte_runs
         end
         
         [MeasurementConvert, FalseAlarmConvert, R] = convertMeasurement(Measurement, FalseAlarm, Sensor_Parameter);
-        plot(MeasurementConvert(1), MeasurementConvert(2), 'm.', 'MarkerSize', 15); 
+        %plot(MeasurementConvert(1), MeasurementConvert(2), 'm.', 'MarkerSize', 15); 
         %plot(FalseAlarmConvert(1), FalseAlarmConvert(2), 'rx', 'MarkerSize', 10); 
         % 
         % .. = dataAssociation(....);

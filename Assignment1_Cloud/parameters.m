@@ -13,14 +13,14 @@ p.scenario.num_of_time_steps = 100;
 
  p.target(1).start_time = 1.0;
  p.target(1).start_state = [100.0 30 3000 20]';
- p.target(1).process_noise = 0.01;
+ p.target(1).process_noise = 0.5;
  p.target(1).sampletime = 2;
 
 
 %% Sensor Parameters
 
- p.sensor(1).Pd = 1;
- p.sensor(1).FalseDensity = 0;
+ p.sensor(1).Pd = 0.9;
+ p.sensor(1).FalseDensity = 1e-4;
  p.sensor(1).sampling_time = 2;
  p.sensor(1).Xpos = 1000;
  p.sensor(1).Ypos = 500;
