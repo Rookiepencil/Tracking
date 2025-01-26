@@ -1,56 +1,63 @@
 %%% Initialization
 clear all
 close all
+clc
 
 p = parameters();
 Sensor_Parameter = p.sensor;
 dt = p.target(1).sampletime; % Sampling time
+xk_1 = p.target(1).start_state; % Initial state of the target
 Target_Process_Noise = p.target(1).process_noise;
-
+Ideal_Movement = []; %just for testing
+real_Target_Movement =[]; 
+Ideal_Movement = [Ideal_Movement,xk_1]; %just for testing
+real_Target_Movement =[real_Target_Movement, xk_1];
 %% Main Loop
 for r=1:p.scenario.monte_runs
      figure; % open the figure and make sure it can always update on that graph
      hold on; 
      xlabel('X Position');
      ylabel('Y Position');
-     title('Assignment 1');
-     grid on;
-    %%% perform any initialization this run
-    target_Number = 0;
-    xk_1 = p.target(1).start_state; % Initial state of the target
-    plot(xk_1(1), xk_1(3), 'b.', 'MarkerSize', 15); % Plot target Movement
-    plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'g.', 'MarkerSize', 25); % Plot target Movement
-    
-    [Measurement, FalseAlarm]= generateMeasurements(Sensor_Parameter, xk_1);
-    if ~isempty(Measurement)
-        [MeasurementConvert, FalseAlarmConvert, R] = convertMeasurement(Measurement, FalseAlarm, Sensor_Parameter);
-        %plot(MeasurementConvert(1), MeasurementConvert(2), 'm.', 'MarkerSize', 15); 
-    end
-    
-    for k=1:p.scenario.num_of_time_steps 
+     title('Assignment 1 ECE 767');
+     plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'k*', 'MarkerSize', 25); % Plot target Movement
 
-        [xk, Q] = moveTarget(Target_Process_Noise, xk_1, dt);
-        xk_1 = xk;
-        plot(xk(1), xk(3), 'b.', 'MarkerSize', 15); % Plot target Movement
-        target_Number = target_Number + 1;
-        [Measurement, FalseAlarm]= generateMeasurements(Sensor_Parameter, xk);
+    
+    for k=1:p.scenario.num_of_time_steps % This is the simulation step not the Actual time!!!!
+
+
+        plot(real_Target_Movement(1,k), real_Target_Movement(3,k), 'b.', 'MarkerSize', 15); % Plot target Movement
+        %plot(Ideal_Movement(1,k), Ideal_Movement(3,k), 'r.', 'MarkerSize', 15); % Plot true target Movement
+
+        [Measurement]= generateMeasurements(Sensor_Parameter, real_Target_Movement(:,k));
+
+        [xk, Q,Truevalue] = moveTarget(Target_Process_Noise, xk_1, dt, Ideal_Movement(:,k)); %just for testing
+
+         xk_1 = xk;
+        Ideal_Movement = [Ideal_Movement,Truevalue];
+        real_Target_Movement = [real_Target_Movement,xk];
+        
         if isempty(Measurement)
             continue;
         end
-        
-        [MeasurementConvert, FalseAlarmConvert, R] = convertMeasurement(Measurement, FalseAlarm, Sensor_Parameter);
-        %plot(MeasurementConvert(1), MeasurementConvert(2), 'm.', 'MarkerSize', 15); 
-        %plot(FalseAlarmConvert(1), FalseAlarmConvert(2), 'rx', 'MarkerSize', 10); 
+
+        [MeasurementConvert, R] = convertMeasurement(Measurement, Sensor_Parameter);
+
+        for y = 1:size(MeasurementConvert, 1)
+            plot(MeasurementConvert(y,1), MeasurementConvert(y,2), 'm.', 'MarkerSize', 15);
+        end
+         
+        % plot(FalseAlarmConvert(1), FalseAlarmConvert(2), 'rx', 'MarkerSize', 10); 
         % 
         % .. = dataAssociation(....);
         % 
         % .. = kalmanFilter(....)
-        %pause(dt)    
+        %pause(1)    
     end
     
     hold off
-    
-    
+    %legend('Sensor Position','real Movement','Ideal Movement','Measurement','Location','best');
+    legend('Sensor Position','real Movement','Measurement','Location','best');
+    grid on;
 end
 %% calculate the RMSE
 

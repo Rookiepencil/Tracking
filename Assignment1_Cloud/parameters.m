@@ -13,7 +13,7 @@ p.scenario.num_of_time_steps = 100;
 
  p.target(1).start_time = 1.0;
  p.target(1).start_state = [100.0 30 3000 20]';
- p.target(1).process_noise = 1.5;
+ p.target(1).process_noise = 0.5;
  p.target(1).sampletime = 2;
 
 
