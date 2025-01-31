@@ -19,11 +19,11 @@ function Measurement = generateMeasurements(parameter, target_state) %combine me
    end
 
    
-   % numberofFalse = poissrnd(Lamda);
-   % for i = 1:numberofFalse
-   %     falseRange = (parameter.rangeUb  - parameter.rangeLb) * rand(1) + parameter.rangeLb;
-   %     falseazimuth = (parameter.AziUb  - parameter.AziLb) * rand(1) + parameter.AziLb;
-   %     Measurement = [Measurement; falseRange,falseazimuth];
-   % end
+   numberofFalse = poissrnd(Lamda);
+   for i = 1:numberofFalse
+       falseRange = (parameter.rangeUb  - parameter.rangeLb) * rand(1) + parameter.rangeLb;
+       falseazimuth = (parameter.AziUb  - parameter.AziLb) * rand(1) + parameter.AziLb;
+       Measurement = [Measurement; falseRange,falseazimuth];
+   end
 
 end

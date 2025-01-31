@@ -21,9 +21,12 @@ for r=1:p.scenario.monte_runs
      title('Assignment 1 ECE 767');
      plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'k*', 'MarkerSize', 25); % Plot target Movement
 
+     xhat_k; % you will need mvmrnd to generate X update initial state
+     P; %P stay the same
     
     for k=1:p.scenario.num_of_time_steps % This is the simulation step not the Actual time!!!!
 
+        %if k == 1 I should not do anything -- Prof Suggestion
 
         plot(real_Target_Movement(1,k), real_Target_Movement(3,k), 'b.', 'MarkerSize', 15); % Plot target Movement
         %plot(Ideal_Movement(1,k), Ideal_Movement(3,k), 'r.', 'MarkerSize', 15); % Plot true target Movement

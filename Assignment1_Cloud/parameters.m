@@ -5,7 +5,7 @@ function p = parameters()
  % p.scenario.monte_runs = 2;
  % p.scenario.num_of_time_steps = 50;
 
-p.scenario.monte_runs = 1;
+p.scenario.monte_runs = 3;
 p.scenario.num_of_time_steps = 100;
 
 %% Target Parameters
@@ -35,6 +35,11 @@ p.scenario.num_of_time_steps = 100;
 %% Tracker Parameters
 
  p.tracker.gate_size = 2.1;%change this value
+ p.InitialCov = [sigmax, 0, 0, 0;
+                 0, sigmaxdot,0, 0;
+                  0, 0, sigmay, 0;
+                  0, 0, 0, sigmaydot];
+ 
 
 
 %% Performance Evalution Parameters
