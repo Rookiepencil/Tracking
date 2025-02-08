@@ -16,7 +16,7 @@ function [MeasurementConvert,R]= convertMeasurement(Measurement, Sensor_Paramete
        Rp11 = (lamdatheta1^-2 - 2) * range^2 * cos(Azi)^2 + 0.5 * (range^2 + Sensor_Parameter.rangeSigma^2) * (1 + lamdatheta2 * cos(2 * Azi));
        Rp22 = (lamdatheta1^-2 - 2) * range^2 * sin(Azi)^2 + 0.5 * (range^2 + Sensor_Parameter.rangeSigma^2) * (1 - lamdatheta2 * cos(2 * Azi));
        Rp12 = (lamdatheta1^-2 - 2) * range^2 * cos(Azi) * sin(Azi) + (0.5 * (range^2 + Sensor_Parameter.rangeSigma^2)) * lamdatheta2 * sin(2 * Azi);
-       R = [Rp11, Rp12; Rp12, Rp22]; %This is the problem
+       R = [R;[Rp11, Rp12; Rp12, Rp22]];
    end
    
    % for i = 1:size(FalseAlarm, 1)

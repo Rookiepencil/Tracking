@@ -34,7 +34,7 @@ p.scenario.num_of_time_steps = 100;
 
 %% Tracker Parameters
 
- p.tracker.gate_size = 13;%change this value
+ p.tracker.gate_size = chi2inv(0.99,2);%change this value
  % p.InitialCov = [sigmax, 0, 0, 0;
  %                 0, sigmaxdot,0, 0;
  %                  0, 0, sigmay, 0;
