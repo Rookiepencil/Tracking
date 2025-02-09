@@ -5,7 +5,7 @@ function p = parameters()
  % p.scenario.monte_runs = 2;
  % p.scenario.num_of_time_steps = 50;
 
-p.scenario.monte_runs = 1;
+p.scenario.monte_runs = 10;
 p.scenario.num_of_time_steps = 100;
 
 %% Target Parameters
