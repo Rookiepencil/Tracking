@@ -7,7 +7,7 @@ function [xk_hat, Pk_hat] = kalmanFilter(x_Pred, P_pred, z, R) % add additional 
     Inno = z' - H * x_Pred;
      
     % S matrix
-    S = H * P_pred * H' + R;
+    S = (H * P_pred * H') + R;
 
     % **Kalman Gain
     K = (P_pred * H') / S;

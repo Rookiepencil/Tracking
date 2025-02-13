@@ -12,8 +12,8 @@ p.scenario.num_of_time_steps = 100;
 
 
  p.target(1).start_time = 1.0;
- p.target(1).start_state = [100.0 30 3000 20]';
- p.target(1).process_noise = 0.5;
+ p.target(1).start_state = [5000.0 -30 3000 -20]';
+ p.target(1).process_noise = 0.01;
  p.target(1).sampletime = 2;
 
 
@@ -34,7 +34,8 @@ p.scenario.num_of_time_steps = 100;
 
 %% Tracker Parameters
 
- p.tracker.gate_size = chi2inv(0.99,2);%change this value
+ %p.tracker.gate_size = chi2inv(0.99,2);%change this value
+ p.tracker.gate_size = 9;%change this value
  % p.InitialCov = [sigmax, 0, 0, 0;
  %                 0, sigmaxdot,0, 0;
  %                  0, 0, sigmay, 0;

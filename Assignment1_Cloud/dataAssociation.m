@@ -15,11 +15,17 @@ function [asso_meas_ind,R_Update] = dataAssociation(TrackGate, x_pred, P_pred, m
         Error = z - (H * x_pred); 
 
         Distance = Error' * S_Inv * Error;
+        
 
         if abs(Distance) < TrackGate && abs(Distance) < minimumDis
             asso_meas_ind = i;      
             minimumDis = Distance;
             R_Update =  R(i:i+1, :);
+            % disp(['Measurement ', num2str(i), ': Distance = ', num2str(Distance)]);
+            % % disp('Innovation Covariance S:');
+            % % disp(S);
+            % disp('Position:');
+            % disp(z);
         end
     end
 end

@@ -9,6 +9,7 @@ function [xk,Q] = moveTarget(Process_Noise, xk_1, T) % add additional parameters
 
     G = [(T^2 / 2), 0; T, 0; 0, (T^2 / 2); 0, T];
     RandomNoise = (G * sqrt(Process_Noise) *randn(2,1));
+    %RandomNoise = 0;
     %disp(RandomNoise);
     xk = (F * xk_1)+ RandomNoise;
     Q  = G * Process_Noise * G';
