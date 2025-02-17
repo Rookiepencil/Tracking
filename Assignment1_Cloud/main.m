@@ -3,7 +3,7 @@ clear all;
 close all;
 % clc;
 
-rng(1);
+%rng(1);
 
 % Parameters
 p = parameters(); % Load scenario parameters
@@ -43,6 +43,7 @@ for r = 1:p.scenario.monte_runs
 
     % Time Step Loop
     for k = 1:p.scenario.num_of_time_steps
+
         % Plot real target movement
         plot(real_Target_Movement(1, k), real_Target_Movement(3, k), 'b.', 'MarkerSize', 15);
 
@@ -78,8 +79,8 @@ for r = 1:p.scenario.monte_runs
         [asso_meas_ind, R_Update] = dataAssociation(p.tracker.gate_size, x_pred, P_pred, MeasurementConvert, R);
 
         % Kalman filter update
-        if asso_meas_ind ~= -1 % If a measurement was associated
-            z = MeasurementConvert(asso_meas_ind, :); % Associated measurement
+        if asso_meas_ind ~= -1 % If a measurement was associated we do filtering
+            z = MeasurementConvert(asso_meas_ind, :); % Associated Measurement
             Sensor_Measurement = [Sensor_Measurement; z];
             plot(z(1), z(2), 'm.', 'MarkerSize', 15); % Plot measurement
             [xk_hat, Pk_hat] = kalmanFilter(x_pred, P_pred, z, R_Update);
@@ -94,13 +95,12 @@ for r = 1:p.scenario.monte_runs
 
         % Calculate error if associated
         if asso_meas_ind ~= -1
-            estimated_position_x = xk_hat(1); % Estimated position
+            estimated_position_x = xk_hat(1); % Estimated X position
             true_position = real_Target_Movement(1, k); % True position
             
             error = estimated_position_x - true_position; % Euclidean distance
             errors_per_time(r, k) = error.^2; 
             counts_per_time(1, r) = counts_per_time(1,r) + 1;
-            %disp(error);
 
         end
         
