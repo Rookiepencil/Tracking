@@ -5,9 +5,8 @@ function p = parameters()
  % p.scenario.monte_runs = 2;
  % p.scenario.num_of_time_steps = 50;
 
-p.scenario.monte_runs = 10;
+p.scenario.monte_runs = 50;
 p.scenario.num_of_time_steps = 100;
-
 %% Target Parameters
 
 
@@ -35,7 +34,9 @@ p.scenario.num_of_time_steps = 100;
 %% Tracker Parameters
 
  %p.tracker.gate_size = chi2inv(0.99,2);%change this value
- p.tracker.gate_size = 9;%change this value
+ p.tracker.gate_size = chi2inv(0.99,2); %change this value
+
+
  % p.InitialCov = [sigmax, 0, 0, 0;
  %                 0, sigmaxdot,0, 0;
  %                  0, 0, sigmay, 0;
