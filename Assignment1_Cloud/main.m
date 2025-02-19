@@ -120,7 +120,7 @@ for r = 1:p.scenario.monte_runs
             estimated_velocity_xy = [xk_hat(2);xk_hat(4)]; %Estimated XY Velocity
             estimated_position_xy = [xk_hat(1);xk_hat(3)]; %Estimated XY position
             
-            true_velocity_xy = [real_Target_Movement(2, k);real_Target_Movement(3, k)];% True XY Velocity
+            true_velocity_xy = [real_Target_Movement(2, k);real_Target_Movement(4, k)];% True XY Velocity
             true_position_xy = [real_Target_Movement(1, k);real_Target_Movement(3, k)];% True XY position
             
             error_xy_velocity = vecnorm(true_velocity_xy - estimated_velocity_xy, 2, 2);
@@ -182,6 +182,6 @@ grid on;
 figure
 plot(time_vector,total_Valid_Track,'k-',LineWidth=1.5);
 xlabel('Time (s)');
-ylabel('Valid Run');
+ylabel('Number of Valid Run');
 title('Total Valid Track vs. Time');
 grid on;
