@@ -6,7 +6,7 @@ close all;
 
 % Parameters
 p = parameters(); % Load scenario parameters
-Pk0 = diag([250,40,250,40]); % Initial state covariance
+Pk0 = diag([30^2,10^2,30^2,10^2]); % Initial state covariance
 Sensor_Parameter = p.sensor;
 dt = p.target(1).sampletime; % Sampling time
 Target_Process_Noise = p.target(1).process_noise;
