@@ -76,10 +76,6 @@ for r = 1:p.scenario.monte_runs
         xk_1 = xk;
         real_Target_Movement = [real_Target_Movement, xk];
 
-        % Skip if no measurement
-        if isempty(Measurement)
-            continue;
-        end
 
         % Convert measurement to expected format and calculate R
         [MeasurementConvert, R] = convertMeasurement(Measurement, Sensor_Parameter);
@@ -108,7 +104,7 @@ for r = 1:p.scenario.monte_runs
             Sensor_Measurement = [Sensor_Measurement; nan(1, 2)]; % Mark as unassociated
             xk_hat = x_pred;
             Pk_hat = P_pred;
-            continue;
+            %continue;
         end
 
         % Plot tracker
