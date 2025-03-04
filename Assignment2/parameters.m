@@ -5,15 +5,25 @@ function p = parameters()
  % p.scenario.monte_runs = 2;
  % p.scenario.num_of_time_steps = 50;
 
-p.scenario.monte_runs = 100;
-p.scenario.num_of_time_steps = 100;
+p.scenario.monte_runs = 1;
+%p.scenario.num_of_time_steps = 100;
+p.scenario.num_of_time = 40;
 %% Target Parameters
 
 
- p.target(1).start_time = 1.0;
+ p.target(1).start_time = 5.0;
+ p.target(1).end_time = 30.0;
  p.target(1).start_state = [5000 0 3000 -30]';
  p.target(1).process_noise = 0.01;
- p.target(1).sampletime = 2;
+ p.target(1).sampletime = 1;
+
+ p.target(2).start_time = 15.0;
+  p.target(1).end_time = 40.0;
+ p.target(2).start_state = [1000 0 3000 -30]';
+ p.target(2).process_noise = 0.01;
+ p.target(2).sampletime = 1;
+
+
 
 
 %% Sensor Parameters
