@@ -7,19 +7,19 @@ function p = parameters()
 
 p.scenario.monte_runs = 1;
 %p.scenario.num_of_time_steps = 100;
-p.scenario.num_of_time = 40;
+p.scenario.num_of_time = 45;
 %% Target Parameters
 
 
  p.target(1).start_time = 5.0;
  p.target(1).end_time = 30.0;
- p.target(1).start_state = [5000 0 3000 -30]';
- p.target(1).process_noise = 0.01;
+ p.target(1).start_state = [1000 20 500 30]';
+ p.target(1).process_noise = 0.05;
  p.target(1).sampletime = 1;
 
  p.target(2).start_time = 15.0;
-  p.target(1).end_time = 40.0;
- p.target(2).start_state = [1000 0 3000 -30]';
+ p.target(1).end_time = 40.0;
+ p.target(2).start_state = [5000 10 3000 30]';
  p.target(2).process_noise = 0.01;
  p.target(2).sampletime = 1;
 
@@ -43,15 +43,12 @@ p.scenario.num_of_time = 40;
 
 %% Tracker Parameters
 
- %p.tracker.gate_size = chi2inv(0.99,2);%change this value
- p.tracker.gate_size = chi2inv(0.99,2); %change this value
-
-
- % p.InitialCov = [sigmax, 0, 0, 0;
- %                 0, sigmaxdot,0, 0;
- %                  0, 0, sigmay, 0;
- %                  0, 0, 0, sigmaydot];
- % 
+ p.tracker(1).gate_size = chi2inv(0.99,2); %change this value
+ p.tracker(2).gate_size = chi2inv(0.99,2);
+ % p.tracker.Status = "Tentative";
+ % p.tracker.Score = 0;
+ % p.tracker.P = eye(4)*300;
+ 
 
 
 %% Performance Evalution Parameters
