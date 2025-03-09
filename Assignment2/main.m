@@ -11,7 +11,8 @@ Sensor_Parameter = p.sensor;
 dt = p.target(1).sampletime; % Sampling time
 Target1_Process_Noise = p.target(1).process_noise;
 Target2_Process_Noise = p.target(2).process_noise;
-plots_Wants_to_See = 1;
+TrackerGate = p.tracker.gate_size;
+
 %total_Valid_Track = zeros(p.scenario.monte_runs,p.scenario.num_of_time_steps);
 
 % % Initialize Error Tracking
@@ -43,8 +44,11 @@ for r = 1:p.scenario.monte_runs
     Sensor_Measurement = [];
     TargetPred =[];
     TargetP_pred =[];
+    Measurement_Index_Total = [];
     counts = 0;
     rmse_per_Monte = 0;
+    Tracks = [];
+    selected_Idx = [];
     %valid_track = zeros(1,p.scenario.num_of_time_steps);
 
     % Time Step Loop
@@ -77,34 +81,56 @@ for r = 1:p.scenario.monte_runs
      %% Measurement Generation
      [MeasurementT1, MeasurementT2] = generateMeasurements(Sensor_Parameter, real_Target1_Movement(:, k), real_Target2_Movement(:, k));
      all_Measurement_T1 = [all_Measurement_T1; MeasurementT1];  
-     all_Measurement_T2 = [all_Measurement_T2; MeasurementT2];  
-     %% Track Initialize
-            if k == 5
-              p.tracker(1).Status = "Tentative";
-              p.tracker(1).Score = 0;
-              p.tracker(1).P = eye(4)*300;
-              p.tracker(1).State = mvnrnd(p.target(1).start_state, p.tracker(1).P)';
-            end
-
-            if k == 15
-              p.tracker(2).Status = "Tentative";
-              p.tracker(2).Score = 0;
-              p.tracker(2).P = eye(4)*300;
-              p.tracker(2).State = mvnrnd(p.target(2).start_state, p.tracker(2).P)';
-            end
+     all_Measurement_T2 = [all_Measurement_T2; MeasurementT2]; 
+     Measurement_Total = [MeasurementT1;MeasurementT2];
+    
       %% Prediction & PDA
-            if k <= 5 || k <= 15 %track initialization I can not do any prediction
-                
-            else %I can do prediction and PDA
-                for numTrack = 1:length(p.tracker)
-                    %[x_pred, P_pred] = PredictEKF(p.tracker(numTrack).State, p.tracker(numTrack).P, F, Q);
-                    %p.tracker(numTrack).State = x_pred;
-                    %p.tracker(numTrack).P = P_pred;
-                   % [x_update, P_update] = PDAEKF(p.tracker(numTrack),Sensor_Parameter);
-                end
+      if  ~isempty(Tracks)
+          for numTrack = 1:length(Tracks)
+              [x_pred_EKF, P_pred_EKF] = PredictEKF(Tracks(numTrack).x, Tracks(numTrack).P, F, p.other.Q);
+              Tracks(numTrack).x = x_pred_EKF;
+              Tracks(numTrack).P = P_pred_EKF;
+              [x_update, P_update,selected_Idx] = PDAEKF(Tracks(numTrack), Measurement_Total, Sensor_Parameter, TrackerGate, p.tracker(1).Pg);
+              Tracks(numTrack).x = x_update;
+              Tracks(numTrack).P = P_update;
+          end
+      end
+            
+      %% Track Initialization
+      for num = 1:length(Measurement_Total)
+          Measurement_Index_Total = [Measurement_Index_Total;num];
+      end
+      unselected_Idx = setdiff(Measurement_Index_Total, selected_Idx);
+      Vmax = 30;
+      for i = 1:length(unselected_Idx)
+           Z_Init = Measurement_Total(i, :);
+           [MeasurementConvert,Rp11,Rp22,Rp12] = convertMeasurement(Z_Init, Sensor_Parameter);
+           newTrack.ID = i;
+           newTrack.x = [MeasurementConvert(1); 0; MeasurementConvert(2); 0];
+           newTrack.P = [Rp11   0      Rp12 0;
+                         0  (Vmax/2)^2  0   0;
+                         Rp12    0     Rp11 0;
+                         0       0      0 (Vmax/2)^2];
+            newTrack.TentaCount = 0;
+            newTrack.DeadCount = 0;
+            newTrack.ConfirmCount = 0;
+            newTrack.Status= "Tentative";
+            Tracks = [Tracks, newTrack];
+      end      
 
-            end
 
+      %% Track Management
+     % for q = 1:length(Tracks)
+     %     if Tracks(q).DeadCount >= 3
+     %         Tracks(q) = [];
+     %         Tracks(q).Status = "Dead";
+     %         continue;
+     %     end
+     %     if Tracks(q).Status == "Tentative" && Tracks(q).TentaCount >= 3
+     %        Tracks(q).Status = "Confirmed";
+     %     end
+     % 
+     % end
 
     end
 end
@@ -118,7 +144,11 @@ title('Assignment 2');
 plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'g*', 'MarkerSize', 25); % Plot Sensor Plot
 for plotstep = 1:size(real_Target1_Movement,2)
     plot(real_Target1_Movement(1, plotstep), real_Target1_Movement(3, plotstep), 'b.', 'MarkerSize', 15);
-    plot(real_Target2_Movement(1, plotstep), real_Target2_Movement(3, plotstep), 'b.', 'MarkerSize', 15);
+    plot(real_Target2_Movement(1, plotstep), real_Target2_Movement(3, plotstep), 'r.', 'MarkerSize', 15);
+end
+for i = 1:length(Tracks)
+    plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'c', 'MarkerSize', 7);
+    %plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'c', 'MarkerSize', 7);
 end
 
 %% Performance Evalution
