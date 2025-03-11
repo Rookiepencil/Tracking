@@ -7,7 +7,7 @@ function p = parameters()
 
 p.scenario.monte_runs = 1;
 %p.scenario.num_of_time_steps = 100;
-p.scenario.num_of_time = 45;
+p.scenario.num_of_time = 15;
 %% Target Parameters
 
 
@@ -55,7 +55,12 @@ p.scenario.num_of_time = 45;
  % p.tracker.Status = "Tentative";
  % p.tracker.Score = 0;
  % p.tracker.P = eye(4)*300;
- 
+ p.tracker(1).Ntent = 3;
+ p.tracker(1).Mtent = 2;
+
+
+ p.tracker(1).Nconf = 5;
+ p.tracker(1).Mconf = 2;
 
 
 %% Performance Evalution Parameters

@@ -34,6 +34,10 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
         z = Measurements(i, :)';
         z_hat = (H * x_pred);
         Error = z - z_hat; 
+        if ~isreal(Error(2))
+            disp(['Error(2) is complex: ', num2str(Error(2))]);
+            
+        end
         Error(2) = wrapToPi(Error(2)); %Important From  ZHILI HUANG Last presentation
    
         Distance = Error' * S_Inv * Error;
@@ -54,10 +58,10 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
     else % do PDA
         Measurements = Measurements(selected_Idx,:);
         %LLR Calculation
-        for s = 1:length(Measurements)
-            selected_Error = selected_Error(:,s);
+        for s = 1:size(Measurements, 1)
+            pick_Error = selected_Error(:,s);
             % ECE 712 Formula
-            LLR = (1/(2*pi)) * (1 / sqrt(det(S))) * exp(-(1/2) * (selected_Error' * S_Inv * selected_Error));
+            LLR = (1/(2*pi)) * (1 / sqrt(det(S))) * exp(-(1/2) * (pick_Error' * S_Inv * pick_Error));
             LLR = (LLR * Sensor_Parameter.Pd) / Lamda;
             LLR_Matrix(s) = LLR;
         end
@@ -68,7 +72,7 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
         %Kalman Gain
         K = (P_pred * H') / S;
         %Updating
-          for m = 1:length(Measurements)
+          for m = 1:size(Measurements, 1)
               V = V + (BETA(m) * selected_Error(:,m));
               Term1 = Term1 + (BETA(m) * selected_Error(:,m) * selected_Error(:,m)');
           end

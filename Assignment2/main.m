@@ -2,7 +2,7 @@
 clear all;
 close all;
 
-% rng(1);
+rng(1);
 
 % Parameters
 p = parameters(); % Load scenario parameters
@@ -12,6 +12,10 @@ dt = p.target(1).sampletime; % Sampling time
 Target1_Process_Noise = p.target(1).process_noise;
 Target2_Process_Noise = p.target(2).process_noise;
 TrackerGate = p.tracker.gate_size;
+N_tent = p.tracker.Ntent;
+M_tent = p.tracker.Mtent;
+N_conf = p.tracker.Nconf;
+M_conf = p.tracker.Mconf;
 
 %total_Valid_Track = zeros(p.scenario.monte_runs,p.scenario.num_of_time_steps);
 
@@ -53,6 +57,7 @@ for r = 1:p.scenario.monte_runs
 
     % Time Step Loop
     for k = 1:dt:p.scenario.num_of_time
+      Measurement_Index_Total = [];
     %% Target Generation
         %time = (k-1)*dt
        if k >= 5 && k <= 30
@@ -112,26 +117,16 @@ for r = 1:p.scenario.monte_runs
                          Rp12    0     Rp11 0;
                          0       0      0 (Vmax/2)^2];
             newTrack.TentaCount = 0;
-            newTrack.DeadCount = 0;
             newTrack.ConfirmCount = 0;
             newTrack.Status= "Tentative";
+            newTrack.assodata_Tentative = [];
+            newTrack.assodata_Confirm = [];
             Tracks = [Tracks, newTrack];
       end      
 
 
-      %% Track Management
-     % for q = 1:length(Tracks)
-     %     if Tracks(q).DeadCount >= 3
-     %         Tracks(q) = [];
-     %         Tracks(q).Status = "Dead";
-     %         continue;
-     %     end
-     %     if Tracks(q).Status == "Tentative" && Tracks(q).TentaCount >= 3
-     %        Tracks(q).Status = "Confirmed";
-     %     end
-     % 
-     % end
-
+     %% Track Management
+     Tracks = TrackManagement(Tracks, selected_Idx ,M_tent, N_conf, M_conf);     
     end
 end
 %% Plotting Section
@@ -141,14 +136,17 @@ grid on;
 xlabel('X Position');
 ylabel('Y Position');
 title('Assignment 2');
-plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'g*', 'MarkerSize', 25); % Plot Sensor Plot
+plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'k*', 'MarkerSize', 25); % Plot Sensor Plot
 for plotstep = 1:size(real_Target1_Movement,2)
     plot(real_Target1_Movement(1, plotstep), real_Target1_Movement(3, plotstep), 'b.', 'MarkerSize', 15);
     plot(real_Target2_Movement(1, plotstep), real_Target2_Movement(3, plotstep), 'r.', 'MarkerSize', 15);
 end
 for i = 1:length(Tracks)
-    plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'c', 'MarkerSize', 7);
-    %plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'c', 'MarkerSize', 7);
+    if strcmp(Tracks(i).Status, 'Confirmed')
+        plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'g', 'MarkerSize', 7);
+    elseif strcmp(Tracks(i).Status, 'Tentative')
+        plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'r', 'MarkerSize', 8);
+    end
 end
 
 %% Performance Evalution
