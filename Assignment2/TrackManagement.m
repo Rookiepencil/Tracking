@@ -1,6 +1,7 @@
-function [Tracks, deletedTracks] = TrackManagement(Tracks, N_tent, M_tent, N_conf, M_conf)
+function [Tracks, deletedTracks] = TrackManagement(Tracks, deletedTracks, N_tent, M_tent, N_conf, M_conf)
 
     delIdx = [];  
+    Track_Need_Delete = [];
 
     for i = 1:length(Tracks)
         
@@ -21,6 +22,7 @@ function [Tracks, deletedTracks] = TrackManagement(Tracks, N_tent, M_tent, N_con
                 Tracks(i).Status = "Confirmed"; 
 
             elseif sum(tentativeWindow) < M_tent
+                Tracks(i).Status = "Dead";
                 delIdx = [delIdx, i];
                 Track_Need_Delete = [Track_Need_Delete;i];
             end
@@ -33,6 +35,7 @@ function [Tracks, deletedTracks] = TrackManagement(Tracks, N_tent, M_tent, N_con
             confirmedWindow = Tracks(i).assodata_Tentative(end-N_conf+1:end);
 
             if sum(confirmedWindow) < M_conf
+                Tracks(i).Status = "Dead";
                 delIdx = [delIdx, i];
                 Track_Need_Delete = [Track_Need_Delete;i];
             end
@@ -41,7 +44,7 @@ function [Tracks, deletedTracks] = TrackManagement(Tracks, N_tent, M_tent, N_con
 
      if ~isempty(Track_Need_Delete)
        deletedTracks = [deletedTracks,Tracks(Track_Need_Delete)];
-       Tracks(Track_Need_Delete) = [];
+       %Tracks(Track_Need_Delete) = [];
      end
 
 end

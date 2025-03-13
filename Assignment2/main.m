@@ -40,7 +40,7 @@ for r = 1:p.scenario.monte_runs
     grid on;
     xlabel('X Position');
     ylabel('Y Position');
-    title('Truth & Measurement with KF');
+    
     % Initialize for each Monte Carlo run
     Target_1_Start_State = p.target(1).start_state;
     Target_2_Start_State = p.target(2).start_state;
@@ -66,6 +66,7 @@ for r = 1:p.scenario.monte_runs
     % Time Step Loop
     for k = 1:dt:p.scenario.num_of_time
       Measurement_Index_Total = [];
+      title(sprintf('EKF + PDA, Time step: %d', k));
     %% Target Generation
         %time = (k-1)*dt
         if k >= p.target(1).start_time && k <= p.target(1).end_time
@@ -101,25 +102,26 @@ for r = 1:p.scenario.monte_runs
         usedIdx_total = [];
         if ~isempty(Tracks)
             for numTrack = 1:length(Tracks)
-
-                % EKF Prediction
-                [x_pred, P_pred] = PredictEKF(Tracks(numTrack).x, Tracks(numTrack).P, F, p.other.Q);
-                Tracks(numTrack).x = x_pred;
-                Tracks(numTrack).P = P_pred;
-                
-                % PDA Update
-                [x_upd, P_upd, selected_Idx] = PDAEKF(Tracks(numTrack), Measurement_Total, Sensor_Parameter, TrackerGate, p.tracker(1).Pg);
-                Tracks(numTrack).x = x_upd;
-                Tracks(numTrack).P = P_upd;
-                usedIdx_total = union(usedIdx_total, selected_Idx);
-                Tracks(numTrack).TrackHistory_x = [Tracks(numTrack).TrackHistory_x; x_upd'];
-                Tracks(numTrack).TrackHistory_p = [Tracks(numTrack).TrackHistory_p;P_upd];
-                
-                % Tell us whether assocation is success or not
-                if ~isempty(selected_Idx)
-                    Tracks(numTrack).assocResultCurrent = 1;
-                else
-                    Tracks(numTrack).assocResultCurrent = 0;
+                if Tracks(numTrack).Status == "Tentative" || Tracks(numTrack).Status == "Confirmed"
+                    % EKF Prediction
+                    [x_pred, P_pred] = PredictEKF(Tracks(numTrack).x, Tracks(numTrack).P, F, p.other.Q);
+                    Tracks(numTrack).x = x_pred;
+                    Tracks(numTrack).P = P_pred;
+                    
+                    % PDA Update
+                    [x_upd, P_upd, selected_Idx] = PDAEKF(Tracks(numTrack), Measurement_Total, Sensor_Parameter, TrackerGate, p.tracker(1).Pg);
+                    Tracks(numTrack).x = x_upd;
+                    Tracks(numTrack).P = P_upd;
+                    usedIdx_total = union(usedIdx_total, selected_Idx);
+                    Tracks(numTrack).TrackHistory_x = [Tracks(numTrack).TrackHistory_x; x_upd'];
+                    Tracks(numTrack).TrackHistory_p = [Tracks(numTrack).TrackHistory_p;P_upd];
+                    
+                    % Tell us whether assocation is success or not
+                    if ~isempty(selected_Idx)
+                        Tracks(numTrack).assocResultCurrent = 1;
+                    else
+                        Tracks(numTrack).assocResultCurrent = 0;
+                    end
                 end
             end
         end
@@ -128,7 +130,7 @@ for r = 1:p.scenario.monte_runs
       for num = 1:size(Measurement_Total, 1)
           Measurement_Index_Total = [Measurement_Index_Total;num];
       end
-      unselected_Idx = setdiff(Measurement_Index_Total, selected_Idx);
+      unselected_Idx = setdiff(Measurement_Index_Total, usedIdx_total);
       Vmax = 30;
 
       for i = 1:length(unselected_Idx)
@@ -156,7 +158,8 @@ for r = 1:p.scenario.monte_runs
         
         %% Track Management
   
-        Tracks = TrackManagement(Tracks, N_tent, M_tent, N_conf, M_conf);
+        [Tracks, deletedTracks] = TrackManagement(Tracks, deletedTracks, N_tent, M_tent, N_conf, M_conf);
+
         
         %% Plotting Section
 
@@ -188,10 +191,12 @@ for r = 1:p.scenario.monte_runs
                 plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'g', 'MarkerSize', 7);
             elseif Tracks(t).Status == "Tentative"
                 plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'r', 'MarkerSize', 8);
+            elseif Tracks(t).Status == "Dead"
+                plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'k', 'MarkerSize', 8);
             end
         end
        
-        pause(0.8)
+        pause(1.0)
       
         
         
