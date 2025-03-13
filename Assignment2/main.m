@@ -35,6 +35,12 @@ F = [1 dt 0 0;
 
 %% Main Monte Carlo Loop
 for r = 1:p.scenario.monte_runs
+    figure;
+    hold on;
+    grid on;
+    xlabel('X Position');
+    ylabel('Y Position');
+    title('Truth & Measurement with KF');
     % Initialize for each Monte Carlo run
     Target_1_Start_State = p.target(1).start_state;
     Target_2_Start_State = p.target(2).start_state;
@@ -52,7 +58,9 @@ for r = 1:p.scenario.monte_runs
     counts = 0;
     rmse_per_Monte = 0;
     Tracks = [];
+    deletedTracks = [];
     selected_Idx = [];
+    p.IDcounter = 1;
     %valid_track = zeros(1,p.scenario.num_of_time_steps);
 
     % Time Step Loop
@@ -60,8 +68,8 @@ for r = 1:p.scenario.monte_runs
       Measurement_Index_Total = [];
     %% Target Generation
         %time = (k-1)*dt
-       if k >= 5 && k <= 30
-          if k > 5
+        if k >= p.target(1).start_time && k <= p.target(1).end_time
+          if k > p.target(1).start_time
             [Target_1_Next_State, Target1_Q] = moveTarget(Target1_Process_Noise, Target_1_Start_State, dt);
             real_Target1_Movement = [real_Target1_Movement,Target_1_Next_State];
             Target_1_Start_State = Target_1_Next_State;
@@ -69,11 +77,11 @@ for r = 1:p.scenario.monte_runs
             real_Target1_Movement = [real_Target1_Movement,Target_1_Start_State];
           end
        else
-           real_Target1_Movement = [real_Target1_Movement,nan(4,1)];
+           real_Target1_Movement = [real_Target1_Movement,nan(4,1)]; 
        end
-    
-       if k >= 15 && k <= 40
-           if k > 15
+
+       if k >= p.target(2).start_time && k <= p.target(2).end_time
+           if k > p.target(2).start_time
              [Target_2_Next_State, Target2_Q] = moveTarget(Target2_Process_Noise, Target_2_Start_State, dt);
              real_Target2_Movement = [real_Target2_Movement,Target_2_Next_State];
              Target_2_Start_State = Target_2_Next_State;
@@ -83,70 +91,113 @@ for r = 1:p.scenario.monte_runs
        else
          real_Target2_Movement = [real_Target2_Movement,nan(4,1)];
        end
-     %% Measurement Generation
-     [MeasurementT1, MeasurementT2] = generateMeasurements(Sensor_Parameter, real_Target1_Movement(:, k), real_Target2_Movement(:, k));
-     all_Measurement_T1 = [all_Measurement_T1; MeasurementT1];  
-     all_Measurement_T2 = [all_Measurement_T2; MeasurementT2]; 
-     Measurement_Total = [MeasurementT1;MeasurementT2];
-    
-      %% Prediction & PDA
-      if  ~isempty(Tracks)
-          for numTrack = 1:length(Tracks)
-              [x_pred_EKF, P_pred_EKF] = PredictEKF(Tracks(numTrack).x, Tracks(numTrack).P, F, p.other.Q);
-              Tracks(numTrack).x = x_pred_EKF;
-              Tracks(numTrack).P = P_pred_EKF;
-              [x_update, P_update,selected_Idx] = PDAEKF(Tracks(numTrack), Measurement_Total, Sensor_Parameter, TrackerGate, p.tracker(1).Pg);
-              Tracks(numTrack).x = x_update;
-              Tracks(numTrack).P = P_update;
-          end
-      end
-            
-      %% Track Initialization
-      for num = 1:length(Measurement_Total)
+
+
+        %% Measurement Generation
+        [MeasurementT1, MeasurementT2] = generateMeasurements(Sensor_Parameter, real_Target1_Movement(:, k), real_Target2_Movement(:, k));
+        Measurement_Total = [MeasurementT1; MeasurementT2];
+        
+        %% Prediction & PDA Update 
+        usedIdx_total = [];
+        if ~isempty(Tracks)
+            for numTrack = 1:length(Tracks)
+
+                % EKF Prediction
+                [x_pred, P_pred] = PredictEKF(Tracks(numTrack).x, Tracks(numTrack).P, F, p.other.Q);
+                Tracks(numTrack).x = x_pred;
+                Tracks(numTrack).P = P_pred;
+                
+                % PDA Update
+                [x_upd, P_upd, selected_Idx] = PDAEKF(Tracks(numTrack), Measurement_Total, Sensor_Parameter, TrackerGate, p.tracker(1).Pg);
+                Tracks(numTrack).x = x_upd;
+                Tracks(numTrack).P = P_upd;
+                usedIdx_total = union(usedIdx_total, selected_Idx);
+                Tracks(numTrack).TrackHistory_x = [Tracks(numTrack).TrackHistory_x; x_upd'];
+                Tracks(numTrack).TrackHistory_p = [Tracks(numTrack).TrackHistory_p;P_upd];
+                
+                % Tell us whether assocation is success or not
+                if ~isempty(selected_Idx)
+                    Tracks(numTrack).assocResultCurrent = 1;
+                else
+                    Tracks(numTrack).assocResultCurrent = 0;
+                end
+            end
+        end
+        
+        %% Track Initialization for Unassociated
+      for num = 1:size(Measurement_Total, 1)
           Measurement_Index_Total = [Measurement_Index_Total;num];
       end
       unselected_Idx = setdiff(Measurement_Index_Total, selected_Idx);
       Vmax = 30;
+
       for i = 1:length(unselected_Idx)
            Z_Init = Measurement_Total(i, :);
            [MeasurementConvert,Rp11,Rp22,Rp12] = convertMeasurement(Z_Init, Sensor_Parameter);
-           newTrack.ID = i;
+           newTrack.ID = p.IDcounter;
            newTrack.x = [MeasurementConvert(1); 0; MeasurementConvert(2); 0];
            newTrack.P = [Rp11   0      Rp12 0;
                          0  (Vmax/2)^2  0   0;
-                         Rp12    0     Rp11 0;
+                         Rp12    0     Rp22 0;
                          0       0      0 (Vmax/2)^2];
+            %newTrack.P = nearSPD(newTrack.P);
             newTrack.TentaCount = 0;
             newTrack.ConfirmCount = 0;
             newTrack.Status= "Tentative";
             newTrack.assodata_Tentative = [];
-            newTrack.assodata_Confirm = [];
+            %newTrack.assodata_Confirm = [];
+            newTrack.TrackHistory_x = []; 
+            newTrack.TrackHistory_p = [];
+            newTrack.assocResultCurrent = 1;
+            newTrack.assodata_Tentative = [];
             Tracks = [Tracks, newTrack];
+            p.IDcounter = p.IDcounter + 1;
       end      
+        
+        %% Track Management
+  
+        Tracks = TrackManagement(Tracks, N_tent, M_tent, N_conf, M_conf);
+        
+        %% Plotting Section
 
+        % Plot Sensor Position
+        plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'g*', 'MarkerSize', 15);
 
-     %% Track Management
-     Tracks = TrackManagement(Tracks, selected_Idx ,M_tent, N_conf, M_conf);     
-    end
-end
-%% Plotting Section
-figure;
-hold on
-grid on;
-xlabel('X Position');
-ylabel('Y Position');
-title('Assignment 2');
-plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'k*', 'MarkerSize', 25); % Plot Sensor Plot
-for plotstep = 1:size(real_Target1_Movement,2)
-    plot(real_Target1_Movement(1, plotstep), real_Target1_Movement(3, plotstep), 'b.', 'MarkerSize', 15);
-    plot(real_Target2_Movement(1, plotstep), real_Target2_Movement(3, plotstep), 'r.', 'MarkerSize', 15);
-end
-for i = 1:length(Tracks)
-    if strcmp(Tracks(i).Status, 'Confirmed')
-        plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'g', 'MarkerSize', 7);
-    elseif strcmp(Tracks(i).Status, 'Tentative')
-        plot(Tracks(i).x(1), Tracks(i).x(3), 's', 'color', 'r', 'MarkerSize', 8);
-    end
-end
+        % Target Movement
+        if ~isempty(real_Target1_Movement)
+            plot(real_Target1_Movement(1,1:k), real_Target1_Movement(3,1:k), 'b.', 'MarkerSize', 15);
+        end
+        if ~isempty(real_Target2_Movement)
+            plot(real_Target2_Movement(1,1:k), real_Target2_Movement(3,1:k), 'b.', 'MarkerSize', 15);
+        end
 
+        % Current Measurement
+        if ~isempty(Measurement_Total)
+            meas_cart = [];
+            for m = 1:size(Measurement_Total,1)
+                meas_cart = [meas_cart; convertMeasurement(Measurement_Total(m,:),Sensor_Parameter)];
+                if ~isempty(meas_cart)
+                    plot(meas_cart(m,1), meas_cart(m,2), 'm.', 'MarkerSize', 15);
+                end
+            end
+            
+        end
+        % Plot Trackers
+        for t = 1:length(Tracks)
+            if Tracks(t).Status == "Confirmed"
+                plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'g', 'MarkerSize', 7);
+            elseif Tracks(t).Status == "Tentative"
+                plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'r', 'MarkerSize', 8);
+            end
+        end
+       
+        pause(0.8)
+      
+        
+        
+        
+    end  % End of time step loop
+    hold off 
+end
+ 
 %% Performance Evalution

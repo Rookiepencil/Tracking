@@ -10,8 +10,8 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
     LLR_Matrix = zeros(1, size(Measurements,1));
     % H = [1 0 0 0;
     %      0 0 1 0];
-    R  = [Sensor_Parameter.rangeSigma 0;
-          0 Sensor_Parameter.azimuthSigma];
+    R  = [Sensor_Parameter.rangeSigma^2 0;
+          0 Sensor_Parameter.azimuthSigma^2];
 
     Lamda = Sensor_Parameter.FalseDensity * (Sensor_Parameter.rangeUb  - Sensor_Parameter.rangeLb) * (Sensor_Parameter.AziUb  - Sensor_Parameter.AziLb);
    
@@ -26,17 +26,32 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
     H = [dr_dx 0 dr_dy 0;
          darc_dx 0 darc_dy 0];
 
+    % x = x_pred(1);
+    % y = x_pred(3);
+    %H = [(2*x - 2000)/(2*((x - 1000)^2 + (y - 500)^2)^(1/2)), 0,                                      (2*y - 1000)/(2*((x - 1000)^2 + (y - 500)^2)^(1/2)), 0;
+          %-(imag(x) + real(y) - 500)/((imag(x) + real(y) - 500)^2 + (imag(y) - real(x) + 1000)^2), 0, -(imag(y) - real(x) + 1000)/((imag(x) + real(y) - 500)^2 + (imag(y) - real(x) + 1000)^2), 0];
+ 
+
     S = (H * P_pred * H') + R;
     S_Inv = inv(S);
-
+    [~, flag] = chol(S);
+    disp(flag);
     for i = 1:size(Measurements, 1)
        
         z = Measurements(i, :)';
-        z_hat = (H * x_pred);
+
+        x_ref = x_pred(1)-Sensor_Parameter.Xpos;
+        y_ref = x_pred(3)-Sensor_Parameter.Ypos;
+        b1 = exp(-(Sensor_Parameter.azimuthSigma^2)/2);
+        b2 = exp(-2*(Sensor_Parameter.azimuthSigma^2));
+        r = sqrt((x_ref*b1)^2+(y_ref*b1)^2);
+        theta = atan2(y_ref*b1,x_ref*b1);
+
+        z_hat = [r;theta];
         Error = z - z_hat; 
+        
         if ~isreal(Error(2))
             disp(['Error(2) is complex: ', num2str(Error(2))]);
-            
         end
         Error(2) = wrapToPi(Error(2)); %Important From  ZHILI HUANG Last presentation
    
@@ -61,7 +76,8 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
         for s = 1:size(Measurements, 1)
             pick_Error = selected_Error(:,s);
             % ECE 712 Formula
-            LLR = (1/(2*pi)) * (1 / sqrt(det(S))) * exp(-(1/2) * (pick_Error' * S_Inv * pick_Error));
+            %LLR = (1/(2*pi)) * (1 / sqrt(det(S))) * exp(-(1/2) * (pick_Error' * S_Inv * pick_Error));
+            LLR = mvnpdf(Measurements(s,:)',z_hat, S);
             LLR = (LLR * Sensor_Parameter.Pd) / Lamda;
             LLR_Matrix(s) = LLR;
         end
@@ -80,7 +96,12 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
         P_C = P_pred - (K * S * K');
         x_update = x_pred + K * V;
         P_update = (BETA0 * P_pred) + ((1-BETA0) * P_C) + P_Tilt;
-
+        
+        P_update = (P_update + P_update')/2;
+        e = eig(P_update);
+        if (min(e) < 0)
+            test = 1;
+        end
     end
 
 end

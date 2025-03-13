@@ -13,6 +13,7 @@ function [MeasurementConvert,Rp11,Rp22,Rp12]= convertMeasurement(Measurement, Se
        x_unbiased = Sensor_Parameter.Xpos + ((lamdatheta1^-1) * range * cos(Azi));
        y_unbiased = Sensor_Parameter.Ypos + ((lamdatheta1^-1) * range * sin(Azi));
        MeasurementConvert = [MeasurementConvert; x_unbiased, y_unbiased]; %Attach Each new converted measurement into new matrix for further processing
+       
        % Covariance Matrix Calculation
        Rp11 = (lamdatheta1^-2 - 2) * range^2 * cos(Azi)^2 + 0.5 * (range^2 + Sensor_Parameter.rangeSigma^2) * (1 + lamdatheta2 * cos(2 * Azi));
        Rp22 = (lamdatheta1^-2 - 2) * range^2 * sin(Azi)^2 + 0.5 * (range^2 + Sensor_Parameter.rangeSigma^2) * (1 - lamdatheta2 * cos(2 * Azi));

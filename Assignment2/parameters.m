@@ -7,20 +7,22 @@ function p = parameters()
 
 p.scenario.monte_runs = 1;
 %p.scenario.num_of_time_steps = 100;
-p.scenario.num_of_time = 15;
+p.scenario.num_of_time = 45;
+
+p.IDcounter = 1;
 %% Target Parameters
 
 
  p.target(1).start_time = 5.0;
  p.target(1).end_time = 30.0;
- p.target(1).Xspeed = 20;
+ p.target(1).Xspeed = 10;
  p.target(1).Yspeed = 30;
  p.target(1).start_state = [1000 p.target(1).Xspeed 500 p.target(1).Yspeed]';
  p.target(1).process_noise = 0.01;
  p.target(1).sampletime = 1;
  
 
- p.target(2).start_time = 15.0;
+ p.target(2).start_time = 55.0;
  p.target(2).end_time = 40.0;
  p.target(2).Xspeed = 10;
  p.target(2).Yspeed = 30;
@@ -33,13 +35,13 @@ p.scenario.num_of_time = 15;
 
 %% Sensor Parameters
 
- p.sensor(1).Pd = 0.9;
- p.sensor(1).FalseDensity = 1e-4;
+ p.sensor(1).Pd = 1;
+ p.sensor(1).FalseDensity = 1e-5;
  p.sensor(1).sampling_time = 1;
  p.sensor(1).Xpos = 3000;
- p.sensor(1).Ypos = 50;
+ p.sensor(1).Ypos = 500;
  p.sensor(1).Velocity = 0;
- p.sensor(1).rangeSigma = 50; 
+ p.sensor(1).rangeSigma = 10; 
  p.sensor(1).azimuthSigma = 0.01;
  p.sensor(1).rangeUb = 10000;
  p.sensor(1).rangeLb = 0;
@@ -55,8 +57,8 @@ p.scenario.num_of_time = 15;
  % p.tracker.Status = "Tentative";
  % p.tracker.Score = 0;
  % p.tracker.P = eye(4)*300;
- p.tracker(1).Ntent = 3;
- p.tracker(1).Mtent = 2;
+ p.tracker(1).Ntent = 5;
+ p.tracker(1).Mtent = 3;
 
 
  p.tracker(1).Nconf = 5;
