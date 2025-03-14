@@ -77,8 +77,8 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
         for s = 1:size(Measurements, 1)
             pick_Error = selected_Error(:,s);
             % ECE 712 Formula
-            %LLR = (1/(2*pi)) * (1 / sqrt(det(S))) * exp(-(1/2) * (pick_Error' * S_Inv * pick_Error));
-            LLR = mvnpdf(Measurements(s,:)',z_hat, S);
+            LLR = (1/(2*pi)) * (1 / sqrt(det(S))) * exp(-(1/2) * (pick_Error' * S_Inv * pick_Error));
+            %LLR = mvnpdf(Measurements(s,:)',z_hat, S);
             LLR = (LLR * Sensor_Parameter.Pd) / Lamda;
             LLR_Matrix(s) = LLR;
         end

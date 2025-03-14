@@ -2,7 +2,7 @@
 clear all;
 close all;
 
-rng(1);
+%rng(1);
 
 % Parameters
 p = parameters(); % Load scenario parameters
@@ -134,7 +134,8 @@ for r = 1:p.scenario.monte_runs
       Vmax = 30;
 
       for i = 1:length(unselected_Idx)
-           Z_Init = Measurement_Total(i, :);
+           actual_unasso_Measu = unselected_Idx(i);
+           Z_Init = Measurement_Total(actual_unasso_Measu, :);
            [MeasurementConvert,Rp11,Rp22,Rp12] = convertMeasurement(Z_Init, Sensor_Parameter);
            newTrack.ID = p.IDcounter;
            newTrack.x = [MeasurementConvert(1); 0; MeasurementConvert(2); 0];
@@ -164,7 +165,7 @@ for r = 1:p.scenario.monte_runs
         %% Plotting Section
 
         % Plot Sensor Position
-        plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'g*', 'MarkerSize', 15);
+        plot(Sensor_Parameter.Xpos, Sensor_Parameter.Ypos, 'k*', 'MarkerSize', 27);
 
         % Target Movement
         if ~isempty(real_Target1_Movement)
@@ -196,7 +197,7 @@ for r = 1:p.scenario.monte_runs
             end
         end
        
-        pause(1.0)
+        pause(1)
       
         
         

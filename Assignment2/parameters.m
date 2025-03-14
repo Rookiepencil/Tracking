@@ -22,7 +22,7 @@ p.IDcounter = 1;
  p.target(1).sampletime = 1;
  
 
- p.target(2).start_time = 55.0;
+ p.target(2).start_time = 15.0;
  p.target(2).end_time = 40.0;
  p.target(2).Xspeed = 10;
  p.target(2).Yspeed = 30;

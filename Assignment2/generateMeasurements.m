@@ -35,7 +35,7 @@ function [MeasurementT1, MeasurementT2] = generateMeasurements(parameter, target
         
         % Azimuth generation 
         azimuthmeasurement = atan2(target2_state(3)- SensorYpos , target2_state(1)- SensorXpos);
-        azimuthmeasurement = azimuthmeasurement + randn * azimuthNoise* 0.5;
+        azimuthmeasurement = azimuthmeasurement + randn * azimuthNoise;
        
         MeasurementT2 = [MeasurementT2;rangemeasurement,azimuthmeasurement];
        end
