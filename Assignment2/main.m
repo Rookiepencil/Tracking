@@ -2,7 +2,7 @@
 clear all;
 close all;
 
-%rng(1);
+rng(1);
 
 % Parameters
 p = parameters(); % Load scenario parameters
@@ -66,6 +66,7 @@ for r = 1:p.scenario.monte_runs
     % Time Step Loop
     for k = 1:dt:p.scenario.num_of_time
       Measurement_Index_Total = [];
+      Converted =[];
       title(sprintf('EKF + PDA, Time step: %d', k));
     %% Target Generation
         %time = (k-1)*dt
@@ -137,6 +138,7 @@ for r = 1:p.scenario.monte_runs
            actual_unasso_Measu = unselected_Idx(i);
            Z_Init = Measurement_Total(actual_unasso_Measu, :);
            [MeasurementConvert,Rp11,Rp22,Rp12] = convertMeasurement(Z_Init, Sensor_Parameter);
+           Converted = [Converted;MeasurementConvert];
            newTrack.ID = p.IDcounter;
            newTrack.x = [MeasurementConvert(1); 0; MeasurementConvert(2); 0];
            newTrack.P = [Rp11   0      Rp12 0;
@@ -170,6 +172,7 @@ for r = 1:p.scenario.monte_runs
         % Target Movement
         if ~isempty(real_Target1_Movement)
             plot(real_Target1_Movement(1,1:k), real_Target1_Movement(3,1:k), 'b.', 'MarkerSize', 15);
+            
         end
         if ~isempty(real_Target2_Movement)
             plot(real_Target2_Movement(1,1:k), real_Target2_Movement(3,1:k), 'b.', 'MarkerSize', 15);
@@ -178,26 +181,31 @@ for r = 1:p.scenario.monte_runs
         % Current Measurement
         if ~isempty(Measurement_Total)
             meas_cart = [];
-            for m = 1:size(Measurement_Total,1)
-                meas_cart = [meas_cart; convertMeasurement(Measurement_Total(m,:),Sensor_Parameter)];
-                if ~isempty(meas_cart)
-                    plot(meas_cart(m,1), meas_cart(m,2), 'm.', 'MarkerSize', 15);
+           if p.plotter.show_meas == 1
+                for m = 1:size(Measurement_Total,1)
+                    meas_cart = [meas_cart; convertMeasurement(Measurement_Total(m,:),Sensor_Parameter)];
+                    if ~isempty(meas_cart)
+                        plot(meas_cart(m,1), meas_cart(m,2), 'm.', 'MarkerSize', 15);
+                    end
                 end
-            end
+           end
             
         end
         % Plot Trackers
         for t = 1:length(Tracks)
             if Tracks(t).Status == "Confirmed"
                 plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'g', 'MarkerSize', 7);
-            elseif Tracks(t).Status == "Tentative"
+                text(Tracks(t).x(1), Tracks(t).x(3),num2str(Tracks(t).ID));
+            elseif Tracks(t).Status == "Tentative" && p.plotter.show_tent == 1
                 plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'r', 'MarkerSize', 8);
-            elseif Tracks(t).Status == "Dead"
+                text(Tracks(t).x(1), Tracks(t).x(3),num2str(Tracks(t).ID));
+            elseif Tracks(t).Status == "Dead" && p.plotter.show_dead == 1
                 plot(Tracks(t).x(1), Tracks(t).x(3), 's', 'color', 'k', 'MarkerSize', 8);
             end
         end
-       
-        pause(1)
+       xlim(p.plotter.xlim);
+       ylim(p.plotter.ylim);
+       pause(p.plotter.delay)
       
         
         

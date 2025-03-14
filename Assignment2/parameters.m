@@ -8,6 +8,13 @@ function p = parameters()
 p.scenario.monte_runs = 1;
 %p.scenario.num_of_time_steps = 100;
 p.scenario.num_of_time = 45;
+p.plotter.show_meas = 1;
+p.plotter.show_tent = 1;
+p.plotter.show_dead = 1;
+%p.plotter.show_track_id = 1;
+p.plotter.xlim = [-20000 20000];
+p.plotter.ylim = [000 12000];
+p.plotter.delay = 1;
 
 p.IDcounter = 1;
 %% Target Parameters
@@ -22,7 +29,7 @@ p.IDcounter = 1;
  p.target(1).sampletime = 1;
  
 
- p.target(2).start_time = 15.0;
+ p.target(2).start_time = 55.0;
  p.target(2).end_time = 40.0;
  p.target(2).Xspeed = 10;
  p.target(2).Yspeed = 30;
@@ -35,8 +42,8 @@ p.IDcounter = 1;
 
 %% Sensor Parameters
 
- p.sensor(1).Pd = 1;
- p.sensor(1).FalseDensity = 1e-5;
+ p.sensor(1).Pd = 0.9;
+ p.sensor(1).FalseDensity = 1e-4;
  p.sensor(1).sampling_time = 1;
  p.sensor(1).Xpos = 3000;
  p.sensor(1).Ypos = 500;
@@ -57,7 +64,7 @@ p.IDcounter = 1;
  % p.tracker.Status = "Tentative";
  % p.tracker.Score = 0;
  % p.tracker.P = eye(4)*300;
- p.tracker(1).Ntent = 5;
+ p.tracker(1).Ntent = 4;
  p.tracker(1).Mtent = 3;
 
 

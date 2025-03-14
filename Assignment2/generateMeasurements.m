@@ -17,11 +17,11 @@ function [MeasurementT1, MeasurementT2] = generateMeasurements(parameter, target
        else
         %range measurement
         rangemeasurement = sqrt((target1_state(1) - SensorXpos)^2 + (target1_state(3) - SensorYpos)^2);
-        rangemeasurement = rangemeasurement + randn * RangeNoisestandD * 0.5; 
+        rangemeasurement = rangemeasurement + randn * RangeNoisestandD; 
         
         % Azimuth generation 
         azimuthmeasurement = atan2(target1_state(3)- SensorYpos , target1_state(1)- SensorXpos);
-        azimuthmeasurement = azimuthmeasurement + randn * azimuthNoise * 0.5;
+        azimuthmeasurement = azimuthmeasurement + randn * azimuthNoise;
        
         MeasurementT1 = [MeasurementT1;rangemeasurement,azimuthmeasurement];
        end

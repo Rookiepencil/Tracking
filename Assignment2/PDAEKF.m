@@ -28,8 +28,8 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
 
     % x = x_pred(1);
     % y = x_pred(3);
-    %H = [(2*x - 2000)/(2*((x - 1000)^2 + (y - 500)^2)^(1/2)), 0,                                      (2*y - 1000)/(2*((x - 1000)^2 + (y - 500)^2)^(1/2)), 0;
-          %-(imag(x) + real(y) - 500)/((imag(x) + real(y) - 500)^2 + (imag(y) - real(x) + 1000)^2), 0, -(imag(y) - real(x) + 1000)/((imag(x) + real(y) - 500)^2 + (imag(y) - real(x) + 1000)^2), 0];
+    %H = [(2*x - 6000)/(2*((x - 3000)^2 + (y - 500)^2)^(1/2)), 0,                                      (2*y - 1000)/(2*((x - 3000)^2 + (y - 500)^2)^(1/2)), 0;
+          %-(imag(x) + real(y) - 500)/((imag(x) + real(y) - 500)^2 + (imag(y) - real(x) + 3000)^2), 0, -(imag(y) - real(x) + 3000)/((imag(x) + real(y) - 500)^2 + (imag(y) - real(x) + 3000)^2), 0];
  
 
     S = (H * P_pred * H') + R;
@@ -40,14 +40,21 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
        
         z = Measurements(i, :)';
 
+        % x_ref = x_pred(1)-Sensor_Parameter.Xpos;
+        % y_ref = x_pred(3)-Sensor_Parameter.Ypos;
+        % b1 = exp(-(Sensor_Parameter.azimuthSigma^2)/2);
+        % b2 = exp(-2*(Sensor_Parameter.azimuthSigma^2));
+        % r = sqrt((x_ref*b1)^2+(y_ref*b1)^2);
+        % theta = atan2(y_ref*b1,x_ref*b1);
         x_ref = x_pred(1)-Sensor_Parameter.Xpos;
         y_ref = x_pred(3)-Sensor_Parameter.Ypos;
         b1 = exp(-(Sensor_Parameter.azimuthSigma^2)/2);
         b2 = exp(-2*(Sensor_Parameter.azimuthSigma^2));
-        r = sqrt((x_ref*b1)^2+(y_ref*b1)^2);
-        theta = atan2(y_ref*b1,x_ref*b1);
+        r = sqrt((x_ref)^2+(y_ref)^2);
+        theta = atan2(y_ref,x_ref);
 
         z_hat = [r;theta];
+        
         Error = z - z_hat; 
         
         if ~isreal(Error(2))
@@ -58,7 +65,7 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
    
         Distance = Error' * S_Inv * Error;
         
-        if abs(Distance) < TrackerGate^2 %Initial Gating
+        if Distance < TrackerGate^2 %Initial Gating
             selected_Idx = [selected_Idx; i];
             selected_Error = [selected_Error,Error];
         else
@@ -98,11 +105,11 @@ function [x_update, P_update,selected_Idx] = PDAEKF(tracker, Measurements, Senso
         x_update = x_pred + K * V;
         P_update = (BETA0 * P_pred) + ((1-BETA0) * P_C) + P_Tilt;
         
-        P_update = (P_update + P_update')/2;
-        e = eig(P_update);
-        if (min(e) < 0)
-            test = 1;
-        end
+        % P_update = (P_update + P_update')/2;
+        % e = eig(P_update);
+        % if (min(e) < 0)
+        %     test = 1;
+        % end
     end
 
 end

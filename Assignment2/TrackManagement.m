@@ -23,6 +23,7 @@ function [Tracks, deletedTracks] = TrackManagement(Tracks, deletedTracks, N_tent
 
             elseif sum(tentativeWindow) < M_tent
                 Tracks(i).Status = "Dead";
+                Tracks(i).assocResultCurrent = 0;
                 delIdx = [delIdx, i];
                 Track_Need_Delete = [Track_Need_Delete;i];
             end
@@ -36,6 +37,7 @@ function [Tracks, deletedTracks] = TrackManagement(Tracks, deletedTracks, N_tent
 
             if sum(confirmedWindow) < M_conf
                 Tracks(i).Status = "Dead";
+                Tracks(i).assocResultCurrent = 0;
                 delIdx = [delIdx, i];
                 Track_Need_Delete = [Track_Need_Delete;i];
             end
